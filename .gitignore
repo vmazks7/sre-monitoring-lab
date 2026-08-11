@@ -1,0 +1,13 @@
+*.env
+.env.*
+*token*
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.log
+*.tar.gz
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

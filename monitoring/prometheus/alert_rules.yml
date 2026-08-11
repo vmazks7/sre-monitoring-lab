@@ -1,0 +1,85 @@
+groups:
+  - name: transactional_system
+    rules:
+      - alert: HighPaymentErrorRate
+        expr: |
+          (
+            sum(rate(app_transaction_status_total{status=~"failed|timeout"}[5m]))
+            /
+            sum(rate(app_transaction_status_total[5m]))
+          ) > 0.10
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Error rate платежей > 10% в течение 3 минут"
+
+      - alert: ProviderCircuitBreakerOpen
+        expr: app_provider_circuit_state == 2
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Circuit breaker разомкнут для провайдера {{ $labels.provider }}"
+
+      - alert: ProviderConversionLow
+        expr: app_provider_conversion_rate < 0.6
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Конверсия провайдера {{ $labels.provider }} ниже 60% на протяжении 3 минут"
+
+      - alert: ProviderFailoverSpike
+        expr: increase(app_provider_failover_total[5m]) > 10
+        labels:
+          severity: warning
+        annotations:
+          summary: "Много переключений между провайдерами за 5 минут — возможна нестабильность роутинга"
+
+      - alert: PendingTransactionsStuck
+        expr: app_pending_transactions > 30
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Более 30 транзакций в pending дольше 5 минут — похоже на зависание"
+
+      - alert: ProviderMismatchRateHigh
+        expr: increase(app_provider_mismatch_total[10m]) > 15
+        labels:
+          severity: warning
+        annotations:
+          summary: "Много расхождений статусов с провайдером — нужна сверка (reconciliation)"
+
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(app_transaction_settle_seconds_bucket[5m])) by (le)) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 времени расчёта транзакции > 5с на протяжении 5 минут"
+
+      - alert: GenerationStopped
+        expr: app_generation_running == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Генератор трафика выключен более 2 минут — проверь, ожидаемо ли это"
+
+      - alert: DBHostDown
+        expr: up{job="dbhost_node"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "DBHost недоступен для Prometheus"
+
+      - alert: PostgresConnectionsHigh
+        expr: pg_stat_activity_count > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Число активных соединений PostgreSQL близко к лимиту"

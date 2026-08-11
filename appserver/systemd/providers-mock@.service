@@ -1,0 +1,12 @@
+[Unit]
+Description=Payment provider mock API on port %i
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/appserver/traffic_gen
+ExecStart=/usr/bin/python3 /opt/appserver/traffic_gen/providers_mock.py %i
+Restart=always
+User=appuser
+
+[Install]
+WantedBy=multi-user.target

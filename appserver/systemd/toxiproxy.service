@@ -1,0 +1,13 @@
+[Unit]
+Description=Toxiproxy - TCP proxy for chaos testing
+After=network.target
+
+[Service]
+# бинарь ставится отдельно: https://github.com/Shopify/toxiproxy/releases
+# скачать toxiproxy-server-linux-amd64, положить в /usr/local/bin/toxiproxy-server
+ExecStart=/usr/local/bin/toxiproxy-server -host 0.0.0.0 -port 8474
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+psycopg2-binary
+faker
+prometheus_client
+requests
+fastapi
+uvicorn

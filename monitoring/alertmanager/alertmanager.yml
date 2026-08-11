@@ -1,0 +1,52 @@
+# Alertmanager
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.yandex.ru:587'
+  smtp_from: 'your@email'
+  smtp_auth_username: 'smtp_login'
+  smtp_auth_password: 'smtp_app_password'
+  smtp_require_tls: true
+
+route:
+  receiver: default
+  group_by: ['alertname', 'provider']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 2h
+  routes:
+    - match:
+        severity: critical
+      receiver: critical-all
+      continue: false
+    - match:
+        severity: warning
+      receiver: warning-telegram
+
+receivers:
+  - name: default
+    email_configs:
+      - to: 'you@example.com'
+        send_resolved: true
+
+  - name: warning-telegram
+    telegram_configs:
+      - bot_token: 'telegram_bot_token'
+        chat_id: -1000000000000
+        parse_mode: 'HTML'
+        send_resolved: true
+        message: |
+          ⚠️ <b>{{ .CommonLabels.alertname }}</b>
+          {{ .CommonAnnotations.summary }}
+
+  - name: critical-all
+    telegram_configs:
+      - bot_token: 'telegram_bot_token'
+        chat_id: -1000000000000
+        parse_mode: 'HTML'
+        send_resolved: true
+        message: |
+          🔥 <b>CRITICAL: {{ .CommonLabels.alertname }}</b>
+          {{ .CommonAnnotations.summary }}
+    email_configs:
+      - to: 'you@example.com'
+        send_resolved: true
